@@ -18,7 +18,7 @@ $input = Import-Csv $inputfile -Delimiter ";"
 foreach ($item in $input){
 
 #Taking last part of group name and translate it to permission name
-	if 	($item.GROUPS.split("-")[-1] -eq "m") #Taking last part of group name and translate it to permission name
+	if 	($item.GROUPS.split("-")[-1] -eq "m")
             {
             $PERMISSIONS = "Modify"
             }
