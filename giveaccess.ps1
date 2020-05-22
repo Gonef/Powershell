@@ -1,5 +1,5 @@
-#input CSV
-Function Get-FileName($directory) #input group name, share path and domain
+ #input group name, share path and domain from csv file
+Function Get-FileName($directory)
 {
     [System.Reflection.Assembly]::LoadWithPartialName("System.windows.forms") | Out-Null
     
@@ -41,7 +41,7 @@ foreach ($item in $input){
 	elseif 	(($item.GROUPS.split("-")[-1] -eq "x") -or ($item.GROUPS.split("-")[-1] -eq "e") -or ($item.GROUPS.split("-")[-1] -eq "re"))
             {
             $PERMISSIONS = "ReadAndExecute"
-	}
+	    }
 	
 #Merging domain and group to full domain group name
 
