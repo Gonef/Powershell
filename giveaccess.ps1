@@ -32,7 +32,7 @@ foreach ($item in $input){
             }
         elseif 	($item.GROUPS.split("-")[-1] -eq "l")
             {
-            $PERMISSIONS = "ReadData"
+            $PERMISSIONS = "List"
             }
 	elseif 	($item.GROUPS.split("-")[-1] -eq "f")
             {
@@ -62,5 +62,6 @@ $AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule($dom
 $acl.SetAccessRule($AccessRule)
 
 $acl | Set-Acl $item.PATH
+Write-Host $domaingroupname added to $item.PATH as $PERMISSIONS
 
 }
