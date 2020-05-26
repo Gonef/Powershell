@@ -11,6 +11,8 @@ Function Get-FileName($directory)
     
 }
 
+$timestamp = get-date
+
 $inputfile = Get-FileName ".\" 
 
 $input = Import-Csv $inputfile -Delimiter ";" 
@@ -56,12 +58,18 @@ $AccessControl = [System.Security.AccessControl.AccessControlType]"Allow"
 
 #Give permissions to share		
 $acl = Get-Acl $item.PATH
-
+Try
+{
 $AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule($domaingroupname,$PERMISSIONS,$InheritanceFlags,$PropagationFlags,$AccessControl)
 
 $acl.SetAccessRule($AccessRule)
 
 $acl | Set-Acl $item.PATH
-Write-Host $domaingroupname added to $item.PATH as $PERMISSIONS
-
+Write-Host $domaingroupname added to $item.PATH as $PERMISSIONS -foregroundcolor green
+}
+Catch
+{
+Write-Host $domaingroupname has not been added $item.PATH -foregroundcolor red
+Write-Output "$timestamp $domaingroupname has not been added $item.PATH" >> errors.txt
+}
 }
