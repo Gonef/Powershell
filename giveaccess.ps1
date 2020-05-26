@@ -17,7 +17,7 @@ $input = Import-Csv $inputfile -Delimiter ";"
 
 foreach ($item in $input){
 
-#Taking last part of group name and translate it to permission name
+#Take last part of group name and translate it to permission name
 	if 	($item.GROUPS.split("-")[-1] -eq "m")
             {
             $PERMISSIONS = "Modify"
@@ -43,19 +43,24 @@ foreach ($item in $input){
             $PERMISSIONS = "ReadAndExecute"
 	    }
 	
-#Merging domain and group to full domain group name
+#Merge domain and group to full domain group name
 
 $domainname = $item.DOMAIN
 $groupname = $item.GROUPS
 $domaingroupname = "$domainname\$groupname"
 
-#Giving permissions to share		
+#Set Inheritance
+$InheritanceFlags = [System.Security.AccessControl.InheritanceFlags]"ContainerInherit, ObjectInherit"
+$PropagationFlags = [System.Security.AccessControl.PropagationFlags]"None"
+$AccessControl = [System.Security.AccessControl.AccessControlType]"Allow"
+
+#Give permissions to share		
 $acl = Get-Acl $item.PATH
 
-$AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule($domaingroupname,$PERMISSIONS,"Allow")
+$AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule($domaingroupname,$PERMISSIONS,$InheritanceFlags,$PropagationFlags,$AccessControl)
 
 $acl.SetAccessRule($AccessRule)
 
-$acl | Set-Acl $item.PATH 
+$acl | Set-Acl $item.PATH
 
 }
