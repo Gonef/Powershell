@@ -1,7 +1,4 @@
 Add-Type -AssemblyName 'System.Web'
-cls
-function global:new-pwd
-    {
     #Password Properties:
     $pwdLenght = 20
     $pwdNonAlphaChars = 7
