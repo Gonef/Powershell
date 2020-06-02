@@ -10,11 +10,30 @@ $pwdSmallCount = 5
 $pwdSpecialCount = 5
 $pwdNumbersCount = 5
 
+#Create Function for getting random chars from list
+function GetRandomChars($length, $characters)
+    {
+    $randomChar = 1..$length | ForEach-Object {
+        Get-Random -Maximum $characters.length
+        }
+    $private:ofs=""
+    return [String]$characters[$randomChar]
+    }
+
+#Create Function to change order of characters in string
+function ChangeOrder([string]$inputString)
+    {
+    $charArray = $inputString.ToCharArray()
+    $RandomizedStringArray = $charArray | Get-Random -Count $charArray.Length
+    $outputString = -join $RandomizedStringArray
+    return $outputString
+    }
+
 #Get random characters
-$NewPwdCapitals = Get-RandomCharacters -length $pwdCapitalCount -characters $pwdCapital 
-$NewPwdSmalls = Get-RandomCharacters -length $pwdSmallCount -characters $pwdSmall 
-$NewPwdSpecials = Get-RandomCharacters -length $pwdSpecialCount -characters $pwdSpecial 
-$NewPwdNumbers = Get-RandomCharacters -length $pwdNumbersCount -characters $pwdNumbers
+$NewPwdCapitals = GetRandomChars -length $pwdCapitalCount -characters $pwdCapital 
+$NewPwdSmalls = GetRandomChars -length $pwdSmallCount -characters $pwdSmall 
+$NewPwdSpecials = GetRandomChars -length $pwdSpecialCount -characters $pwdSpecial 
+$NewPwdNumbers = GetRandomChars -length $pwdNumbersCount -characters $pwdNumbers
 
 #Generate a password
-$pwd = Scramble-String -inputString ($NewPwdCapitals + $NewPwdSmalls + $NewPwdSpecials + $NewPwdNumbers)
+$pwd = ChangeOrder -inputString ($NewPwdCapitals + $NewPwdSmalls + $NewPwdSpecials + $NewPwdNumbers)
