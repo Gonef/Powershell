@@ -82,3 +82,4 @@ foreach ($line in $csv){
     &"C:\Apps\KeePass\KPScript.exe" -c:EditEntry "C:\KeePassDB\Lab.kdbx" -pw:$KeePassPwd -ref-Title:$user -set-Password:$pwd
     Write-Host "Password changed for user" $line.user ". New password:" $pwd
     }
+Write-Host "KeePass entries have been updated"
