@@ -33,7 +33,7 @@ $inputfile = Get-FileName ".\"
 $csv = Import-Csv $inputfile -Delimiter ";" 
 
 #Get KeePass Password from user
-$KeePassPwd = 'zaq1@WSX' #Read-Host
+#$KeePassPwd = Read-Host -AsSecureString -Prompt "Enter Master Keepass Password"
 
 #Create Function for getting random chars from list
 function GetRandomChars($length, $characters){
@@ -71,4 +71,12 @@ function CreatePwd{
     #Generate a password
     $pwd = ChangeOrder -inputString ($NewPwdCapitals + $NewPwdSmalls + $NewPwdSpecials + $NewPwdNumbers + $NewPwdAllChars)
     return $pwd
+    }
+
+#Reset password and update KeePass entries
+foreach ($line in $csv){
+    $user = $line.user
+    $pwd = CreatePwd
+    Set-ADAccountPassword -Server $line.domain -Identity $line.user -Reset -NewPassword (ConvertTo-SecureString -AsPlainText "$pwd" -Force)
+    Write-Host "Password changed for user" $line.user ". New password:" $pwd
     }
