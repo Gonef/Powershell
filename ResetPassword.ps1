@@ -32,8 +32,9 @@ $inputfile = Get-FileName ".\"
 
 $csv = Import-Csv $inputfile -Delimiter ";" 
 
-#Get KeePass Password from user
-#$KeePassPwd = Read-Host -AsSecureString -Prompt "Enter Master Keepass Password"
+#Get KeePass Password from user than convert it to plain text so cmd can use it.
+$KeePassPwdEncrypted = Read-Host -AsSecureString -Prompt "Enter Master Keepass Password"
+$KeePassPwd = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($KeePassPwdEncrypted))
 
 #Create Function for getting random chars from list
 function GetRandomChars($length, $characters){
@@ -78,5 +79,6 @@ foreach ($line in $csv){
     $user = $line.user
     $pwd = CreatePwd
     Set-ADAccountPassword -Server $line.domain -Identity $line.user -Reset -NewPassword (ConvertTo-SecureString -AsPlainText "$pwd" -Force)
+    &"C:\Apps\KeePass\KPScript.exe" -c:EditEntry "C:\KeePassDB\Lab.kdbx" -pw:$KeePassPwd -ref-Title:$user -set-Password:$pwd
     Write-Host "Password changed for user" $line.user ". New password:" $pwd
     }
