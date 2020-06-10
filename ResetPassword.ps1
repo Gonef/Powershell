@@ -1,5 +1,4 @@
 #For user: Define Password Properties: Excluded chars, password length
-#$pwdExcludeCharsString = '<>()&?#$%'
 $pwdLength = 20
 $pwdMinCapitalCount = 2
 $pwdMinSmallCount = 2
@@ -11,8 +10,6 @@ $pwdCapital = 'ABCDEFGHKLMNOPRSTUVWXYZ'
 $pwdSmall = 'abcdefghiklmnoprstuvwxyz'
 $pwdSpecial = '!"§$%/()=?}][{@#*+<>;'
 $pwdNumbers = '1234567890'
-
-#$pwdExcludeChars = $pwdExcludeCharsString.ToCharArray()
 
 #Import Modules
 Import-Module C:\Modules\CsvInputModule.psm1
