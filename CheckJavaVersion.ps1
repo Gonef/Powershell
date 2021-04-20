@@ -13,7 +13,6 @@ Function Get-FileName($directory){
 $inputfile = Get-FileName ".\" 
 $TimeStamp = Get-Date -Format "MM-dd-yyyy-HH-mm"
 $csv = Import-Csv $inputfile -Delimiter ";" 
-$JavaVersion = Invoke-Command -cn $srv {get-package java*} | Select-Object Name,Source
 $JavaTable = @()
 $ErrorLog = @()
 
@@ -27,8 +26,9 @@ foreach ($line in $csv)
             try
             {
             Enable-WSManCredSSP -Force -Role "Client" -DelegateComputer $srv
-            Invoke-Command -cn $srv { Enable-WSManCredSSP -Force -Role "Client" -DelegateComputer PDC }
+            Invoke-Command -cn $srv { Enable-WSManCredSSP -Force -Role "Client" -DelegateComputer MachineName }
             Invoke-Command -cn $srv { Set-Item WSMan:\localhost\Service\Auth\CredSSP true }
+            $JavaVersion = Invoke-Command -cn $srv {get-package java*} | Select-Object Name,Source
 
             foreach ($Row in $JavaVersion)
                 {
