@@ -18,5 +18,5 @@ $csv = Import-Csv $inputfile -Delimiter ";"
 
 foreach ($line in $csv)
     { 
-    Set-ADUser -Identity $csv.name -ChangePasswordAtLogon $true -server $csv.domain
+    Set-ADUser -Identity $line.name -ChangePasswordAtLogon $true -server $line.domain
     }
