@@ -26,7 +26,7 @@ foreach ($line in $csv)
         {
             try
             {
-            $AccessList += Get-Acl -path $row.Path
+            $AccessList += Invoke-Command -cn $ServerName {Get-Acl -path $row.Path}
             }
             catch
             {
