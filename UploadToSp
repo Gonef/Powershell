@@ -1,0 +1,122 @@
+#Sharepoint integrations
+$url = ""
+$clientID = ""
+$thumbprint = ""
+$tenant = ""
+
+#Move file from linux share config
+$linuxUsername = ""
+$linuxPwd = ""
+$linuxShare = ""
+$secStringLinuxPwd = ConvertTo-SecureString $linuxPwd -AsPlainText -Force
+$source = "X:\"
+$credentials =  New-Object System.Management.Automation.PSCredential ($linuxUsername, $secStringLinuxPwd)
+
+#Local files location
+$tempFolder = ""
+$processedFilesFolder = ""
+
+#Mailer config
+$MailerClientId = ""
+$MailerTenant = ""
+$MailerSecret = ""
+$mailTokenRequest = @{
+    Method = 'POST'
+    URI    = "https://login.microsoftonline.com/$MailerTenant/oauth2/v2.0/token"
+    body   = @{
+        grant_type    = "client_credentials"
+        scope         = "https://graph.microsoft.com/.default"
+        client_id     = $MailerClientId
+        client_secret = $MailerSecret
+    }
+}
+$Mailertoken = (Invoke-RestMethod @mailTokenRequest).access_token
+$fromAddress = ""
+$toAddress = ""
+$mailSubject = ""
+$mailMessage = "This is automatic message. "
+
+#Oracle file name (report is always created for previous month)
+$year = [int](get-date -format "yyyy")
+$month = ([int](get-date -format "MM")) -1
+    if ($month -eq 0) {
+        $month = 12
+        $year--
+    }
+
+$oracleFileName = ""
+$oracleFile = ""
+
+$usageMonth = (get-date -format "MM") -1
+    if ($usageMonth -eq 0) {
+        $usageMonth = 12
+    }
+    if ($usageMonth -lt 10) {
+        $usageMonth = "0$usageMonth"
+    }
+
+$usageFileName = ""
+$usageFile = ""
+
+#Sharepoint folders
+$oracleSPFolder = ""
+$usageSPFolder = ""
+
+try{
+  # Mount drive and copy files
+  New-PSDrive -Name "X" -PSProvider "filesystem" -Root $linuxShare -Credential $credentials
+  Get-ChildItem $source | Copy-Item -Destination $tempFolder -Recurse -ErrorAction SilentlyContinue
+  Get-ChildItem $source | Remove-Item
+  Remove-PSDrive X
+
+  # Estabilish connection with sharepoint
+  Connect-PnPOnline -Url $url -ClientId $clientID -Tenant $tenant -Thumbprint $thumbprint
+
+  # Upload Oracle File to Sharepoint and move processed file, $z variable is used due to PnPonline extension BUG
+  $z = Add-PnPFile -Path $oracleFile -Folder $OracleSPFolder
+  $oracleFile | Copy-Item -Destination $processedFilesFolder -Recurse -ErrorAction SilentlyContinue
+  Remove-Item $oracleFile
+
+  # Upload Usage File to Sharepoint and move processed file
+  $x = Add-PnPFile -Path $usageFile -Folder $usageSPFolder
+  $usageFile | Copy-Item -Destination $processedFilesFolder -Recurse -ErrorAction SilentlyContinue
+  Remove-Item $usageFile
+
+  $statusMassage = "Everything went fine. Usage and Oracle reports uploaded"
+  $statusSubject = "succeed"
+  }
+
+catch{
+  $statusMassage = "Error occured: " + $error
+  $statusSubject = "failed"
+  }
+
+
+#Mailer request
+$mailParameters = @{
+  "URI"         = "https://graph.microsoft.com/v1.0/users/$fromAddress/sendMail"
+  "Headers"     = @{
+    "Authorization" = ("Bearer {0}" -F $mailerToken)
+  }
+  "Method"      = "POST"
+  "ContentType" = 'application/json'
+  "Body" = (@{
+    "message" = @{
+      "subject" = $mailSubject + $statusSubject
+      "body"    = @{
+        "contentType" = 'Text'
+        "content"     = $mailMessage + $statusMassage
+      }
+      "toRecipients" = @(
+        @{
+          "emailAddress" = @{
+            "address" = $toAddress
+          }
+        }
+      )
+    }
+  }) | ConvertTo-JSON -Depth 10
+}
+
+# Send the message
+Invoke-RestMethod @mailParameters -Verbose
